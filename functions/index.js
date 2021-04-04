@@ -87,7 +87,8 @@ exports.importCei = functions.https.onCall( async (data, context) => {
         if(snapshot.empty) {
             const docRef = db.collection(COL_INSTITUTION).doc()
             await docRef.set({
-                name: institution	
+                name: institution,
+                country: 'BR'
             })
             return docRef;
         }
