@@ -15,6 +15,7 @@
   "dependencies": {
     "async": "^3.2.0",
     "cei-crawler": "^2.2.1",
+    "dotenv": "^9.0.2",
     "firebase-admin": "^9.2.0",
     "firebase-functions": "^3.11.0",
     "yahoo-finance": "^0.3.7"
