@@ -2,6 +2,7 @@ const functions = require("firebase-functions");
 var request = require('request');
 var yahooFinance = require('yahoo-finance');
 var async = require("async");
+require('dotenv').config()
 
 
 var admin = require("firebase-admin");
@@ -9,13 +10,12 @@ var admin = require("firebase-admin");
 const COL_ASSETS = 'assets'
 const COL_TICKERS = 'tickers'
 
-let iexToken = 'sk_4bb59ba9e4e24b39aef29ccf8b8ba672';
+let iexToken = process.env.iexToken;
 
 exports.getQuotes = functions.https.onCall( async (data, context) => {
     const db = admin.firestore();
     
-    let uid = 'mhTjeOzxIHb9lFeGycDVrHsiTts1';//context.auth?.uid;
-    
+    let uid = context.auth?.uid;
     let success = await init();
     
     if(success) {
@@ -57,7 +57,7 @@ exports.getQuotes = functions.https.onCall( async (data, context) => {
     async function getOutdatedTickersList(tickers) {
 
         let limitDate = new Date();
-        limitDate.setMinutes( limitDate.getMinutes() - 20 );
+        limitDate.setMinutes( limitDate.getMinutes() - 0 );
 
         var tickersToUpdate = [];
         for(const ticker of tickers) {
@@ -83,7 +83,11 @@ exports.getQuotes = functions.https.onCall( async (data, context) => {
                 if (error) throw new Error(error);
                 let data = JSON.parse(response.body);
                 for(var code in data) {
-                    item = data[code].quote;
+                    let quote = data[code].quote;
+                    let item = {};
+
+                    item.symbol = quote.symbol;
+                    item.latestPrice = quote.latestPrice;
                     item.lastRefresh = new Date();
                     item.currency = 'American Dollars';
                     await upsertTickerData(item);
@@ -101,10 +105,12 @@ exports.getQuotes = functions.https.onCall( async (data, context) => {
                         modules: [ 'price' ] // see the docs for the full list
                     }, async function (err, quotes) {
                         if(!err) {
-                            let item = quotes.price;
-                            item.symbol = item.symbol.replace('.SA', '');
+                            let quote = quotes.price;
+                            let item = {}
+                            item.symbol = quote.symbol.replace('.SA', '');
                             item.currency = 'Brazilian Reais';
                             item.lastRefresh = new Date();
+                            item.latestPrice = quote.regularMarketPrice;
                             await upsertTickerData(item);
                         }
                     }).catch(error => { console.log("ignored", error)});

@@ -1,6 +1,7 @@
 const functions = require("firebase-functions");
 var request = require('request');
 let alphaVintageAPIKey = process.env.alphaVintageAPIKey;
+require('dotenv').config()
 
 const COL_CURRENCIES = 'currencies'
 var admin = require("firebase-admin");
